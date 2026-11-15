@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR-USER/ai-platform-academy.git
+    repoURL: https://github.com/mcclendonnathan1992-design/ai-platform-academy.git
     targetRevision: main
     path: k8s/overlays/dev
   destination:
