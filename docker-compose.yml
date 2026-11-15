@@ -1,0 +1,30 @@
+# Module 02/03: run the whole stack on one machine.
+#   docker compose up -d --build
+#   docker compose exec ollama ollama pull llama3.2:1b
+services:
+  ollama:
+    image: ollama/ollama:0.6.5
+    ports:
+      - "11435:11434"   # host 11435 so it does not clash with a native Ollama on 11434
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  gateway:
+    build: ./app
+    image: ai-gateway:dev
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      MODEL: llama3.2:1b
+    ports:
+      - "8080:8080"
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+volumes:
+  ollama-models:

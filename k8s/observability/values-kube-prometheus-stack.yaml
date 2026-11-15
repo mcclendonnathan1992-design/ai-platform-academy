@@ -1,0 +1,9 @@
+# Small footprint for a laptop.
+grafana:
+  adminPassword: change-me-locally
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    serviceMonitorSelectorNilUsesHelmValues: false
+alertmanager:
+  enabled: false

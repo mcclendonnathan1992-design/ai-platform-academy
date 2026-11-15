@@ -1,0 +1,3 @@
+{"prompt": "What is the capital of France? Answer in one word.", "must_contain": ["paris"]}
+{"prompt": "What is 2 + 2? Answer with just the number.", "must_contain": ["4"]}
+{"prompt": "Name the container orchestration system created by Google. One word.", "must_contain": ["kubernetes"]}

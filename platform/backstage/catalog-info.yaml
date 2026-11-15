@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ai-gateway
+  description: Guarded gateway in front of a local LLM.
+  annotations:
+    github.com/project-slug: YOUR-USER/ai-platform-academy
+spec:
+  type: service
+  lifecycle: experimental
+  owner: platform-team

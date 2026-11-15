@@ -1,0 +1,25 @@
+# Backstage Software Template wrapping the golden path (Module 07). Needs a Backstage instance to use.
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ai-service-golden-path
+  title: AI Service (golden path)
+  description: Containerized service with probes, limits, non-root user and CI.
+spec:
+  owner: platform-team
+  type: service
+  parameters:
+    - title: Service details
+      required: [name]
+      properties:
+        name:
+          type: string
+          pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+  steps:
+    - id: fetch
+      name: Fetch template
+      action: fetch:template
+      input:
+        url: ../golden-path/template
+        values:
+          NAME: ${{ parameters.name }}

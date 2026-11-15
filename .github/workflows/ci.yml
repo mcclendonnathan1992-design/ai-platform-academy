@@ -1,0 +1,50 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install yamllint
+      - run: yamllint -c .yamllint k8s gitops .github platform/backstage
+      - name: Render kustomize
+        run: |
+          kubectl kustomize k8s/base > /tmp/base.yaml
+          kubectl kustomize k8s/overlays/dev > /tmp/dev.yaml
+      - name: kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          ./kubeconform -strict -summary /tmp/base.yaml /tmp/dev.yaml
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive terraform
+      - run: |
+          for d in terraform/local terraform/azure-aks; do
+            terraform -chdir=$d init -backend=false
+            terraform -chdir=$d validate
+          done
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ai-gateway:ci app

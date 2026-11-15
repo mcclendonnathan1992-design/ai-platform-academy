@@ -1,0 +1,68 @@
+# Audit mode: violations are reported, not blocked. Flip to Enforce after fixing them (Module 07).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [ai-lab]
+      validate:
+        message: "CPU and memory limits are required."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    cpu: "?*"
+                    memory: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: no-latest
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [ai-lab]
+      validate:
+        message: "Images must not use the :latest tag."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: gateway-run-as-non-root
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaces: [ai-lab]
+              selector:
+                matchLabels: {app: gateway}
+      validate:
+        message: "Gateway must run as non-root."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true

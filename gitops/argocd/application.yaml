@@ -1,0 +1,19 @@
+# Replace repoURL with YOUR repo before applying.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR-USER/ai-platform-academy.git
+    targetRevision: main
+    path: k8s/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-lab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
