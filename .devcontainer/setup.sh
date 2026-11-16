@@ -2,6 +2,11 @@
 # Best-effort setup: never fail the Codespace build.
 sudo rm -f /etc/apt/sources.list.d/yarn.list
 pip install -r requirements-dev.txt || true
+# One shared Terraform provider cache: every lab reuses the same download instead of copying ~100 MB each.
+mkdir -p "$HOME/.terraform.d/plugin-cache"
+grep -q TF_PLUGIN_CACHE_DIR "$HOME/.bashrc" 2>/dev/null || echo 'export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"' >> "$HOME/.bashrc"
+# Azure CLI (for the real-Azure labs)
+command -v az >/dev/null || (curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash) || echo "Install the Azure CLI later (see labs/AZURE.md)."
 if ! command -v terraform >/dev/null; then
   VER=1.9.8
   curl -fsSL -o /tmp/tf.zip https://releases.hashicorp.com/terraform/${VER}/terraform_${VER}_linux_amd64.zip \

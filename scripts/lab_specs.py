@@ -10,7 +10,7 @@ from typing import Callable
 from labkit import (
     GUID, Check, Ctx, Result, bicep_blocks, bicep_has_resource, bicep_resource_has, bicep_text, bicep_tool,
     check, dockerfile_instructions, load_json, load_yaml_docs, run_tool, strip_comments, terraform_tool,
-    tf_blocks, tf_declares, tf_has_resource, tf_resource_has, tf_syntax, tf_text,
+    tf_blocks, tf_declares, terraform_plan_tool, checkov_tool, CHECKOV_SKIPS, tf_has_resource, tf_resource_has, tf_syntax, tf_text,
 )
 
 
@@ -657,3 +657,10 @@ LABS: dict[str, tuple[str, Spec]] = {
     "10": ("10-aks-bicep", LAB10), "11": ("11-k8s-from-scratch", LAB11), "12": ("12-avd-vdi", LAB12),
     "13": ("13-troubleshooting-drills", LAB13), "14": ("14-capstone-enclave", LAB14),
 }
+
+
+# Stricter, optional checks: they run only when the tool is installed.
+for _lab in ("03", "04"):
+    LABS[_lab][1].tools.append(terraform_plan_tool)
+for _lab in ("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"):
+    LABS[_lab][1].tools.append(checkov_tool(CHECKOV_SKIPS.get(_lab)))

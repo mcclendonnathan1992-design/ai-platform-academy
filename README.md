@@ -31,7 +31,7 @@ flowchart LR
 | 08 | Evaluate and harden | evals, benchmarks, threat model | Engineering |
 | 09 | Capstone | ship and present your own | Build |
 
-**Hands-on from a blank file:** the [`labs/`](labs/README.md) track has 14 labs (Dockerfile, Compose, Terraform and state, Bicep, ARM parameters, AKS, Kubernetes manifests, Azure Virtual Desktop, troubleshooting drills, capstone) graded by `make lab-check LAB=NN`.
+**Hands-on from a blank file:** the [`labs/`](labs/README.md) track has 14 labs (Dockerfile, Compose, Terraform and state, Bicep, ARM parameters, AKS, Kubernetes manifests, Azure Virtual Desktop, troubleshooting drills, capstone) graded by `make lab-check LAB=NN`. Daily practice: `make drill` (20-minute timed task), `make break-lab LAB=NN` (fix planted bugs), `make reset-lab LAB=NN` (redo a lab), and [`labs/AZURE.md`](labs/AZURE.md) for the real-Azure track.
 
 See [LEARNING_PATH.md](LEARNING_PATH.md) for a 12-week schedule and certification mapping.
 

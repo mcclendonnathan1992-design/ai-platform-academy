@@ -22,7 +22,10 @@ def test_reference_solution_passes(lab):
 
 
 @pytest.mark.parametrize("lab", list(LABS))
-def test_blank_work_fails(lab):
+def test_blank_work_fails(lab, tmp_path, monkeypatch):
+    # Use an empty work/ (your own committed answers live in the real one).
+    (tmp_path / "labs" / LABS[lab][0] / "work").mkdir(parents=True)
+    monkeypatch.setattr("lab_check.ROOT", tmp_path)
     results = run_lab(lab, "work")
     assert any(r.ok is False for r in results), "a blank work/ folder must not pass"
     assert not passed(results)

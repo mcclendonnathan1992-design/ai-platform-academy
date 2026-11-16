@@ -267,3 +267,72 @@ def terraform_tool(ctx: Ctx) -> list[Result]:
 
 
 GUID = re.compile(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b")
+
+
+# ---------------------------------------------------------------- stricter tool checks
+
+
+def terraform_plan_tool(ctx: Ctx) -> Result:
+    """`terraform plan` for labs that use only local providers (no cloud login needed)."""
+    desc = "terraform plan succeeds (local providers only)"
+    if os.environ.get("LABKIT_NO_TOOLS"):
+        return Result(desc, None, "tool checks disabled")
+    if shutil.which("terraform") is None:
+        return Result(desc, None, "terraform not installed here (runs in your Codespace)")
+    init = run_tool(desc, "terraform", ["init", "-backend=false", "-input=false"], ctx.root, timeout=300)
+    if not init.ok:
+        return Result(desc, init.ok, ("init failed: " + init.detail) if init.ok is False else init.detail)
+    args = ["plan", "-input=false", "-lock=false", "-no-color"]
+    if (ctx.root / "dev.tfvars").exists():
+        args.append("-var-file=dev.tfvars")
+    return run_tool(desc, "terraform", args, ctx.root, timeout=300)
+
+
+# Checks the reference solutions still fail because they are production hardening beyond a lab's scope
+# (zone-redundant ACR, geo-replication, disk encryption sets...). Everything else must pass.
+CHECKOV_SKIPS: dict[str, list[str]] = {
+    "05": ["CKV2_AZURE_31"],
+    "06": ["CKV_AZURE_206", "CKV_AZURE_35", "CKV_AZURE_43"],
+    "09": ["CKV_AZURE_116", "CKV_AZURE_117", "CKV_AZURE_139", "CKV_AZURE_163", "CKV_AZURE_164", "CKV_AZURE_165",
+           "CKV_AZURE_166", "CKV_AZURE_167", "CKV_AZURE_168", "CKV_AZURE_170", "CKV_AZURE_171", "CKV_AZURE_172",
+           "CKV_AZURE_226", "CKV_AZURE_227", "CKV_AZURE_232", "CKV_AZURE_233", "CKV_AZURE_237"],
+    "10": ["CKV_AZURE_139", "CKV_AZURE_163", "CKV_AZURE_166", "CKV_AZURE_168", "CKV_AZURE_171", "CKV_AZURE_172",
+           "CKV_AZURE_226", "CKV_AZURE_227", "CKV_AZURE_5", "CKV_AZURE_6", "CKV_AZURE_8"],
+    "11": ["CKV_K8S_15", "CKV_K8S_21", "CKV_K8S_35", "CKV_K8S_40", "CKV_K8S_43"],
+}
+
+
+def checkov_tool(skip: list[str] | None = None) -> Callable[[Ctx], Result]:
+    """Policy scan (security misconfigurations) with checkov, if installed."""
+
+    def run(ctx: Ctx) -> Result:
+        desc = "checkov policy scan (security misconfigurations)"
+        if os.environ.get("LABKIT_NO_TOOLS"):
+            return Result(desc, None, "tool checks disabled")
+        if shutil.which("checkov") is None:
+            return Result(desc, None, "checkov not installed (pip install -r requirements-labs.txt)")
+        if not any(ctx.root.rglob("*")):
+            return Result(desc, None, "nothing to scan yet")
+        cmd = ["checkov", "-d", ".", "--quiet", "--compact", "--skip-download", "-o", "json"]
+        if skip:
+            cmd += ["--skip-check", ",".join(skip)]
+        try:
+            p = subprocess.run(cmd, cwd=ctx.root, capture_output=True, text=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            return Result(desc, False, "timed out")
+        try:
+            data = json.loads(p.stdout or "[]")
+        except ValueError:
+            return Result(desc, p.returncode == 0, (p.stderr or p.stdout).strip()[-300:] if p.returncode else "")
+        reports = data if isinstance(data, list) else [data]
+        failed = [
+            f"{c['check_id']} {c['check_name']} ({c.get('resource', '?')})"
+            for r in reports if isinstance(r, dict) and "results" in r
+            for c in r["results"].get("failed_checks", [])
+        ]
+        if not failed:
+            return Result(desc, True)
+        more = f" (+{len(failed) - 3} more)" if len(failed) > 3 else ""
+        return Result(desc, False, "; ".join(failed[:3]) + more)
+
+    return run

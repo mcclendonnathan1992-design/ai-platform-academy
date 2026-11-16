@@ -1,0 +1,2 @@
+# Optional: makes `make lab-check` also run a security policy scan (checkov).
+checkov>=3.2

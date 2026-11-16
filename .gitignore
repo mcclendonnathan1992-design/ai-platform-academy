@@ -14,3 +14,8 @@ __pycache__/
 !labs/04-terraform-modules/solution/dev.tfvars
 !labs/04-terraform-modules/work/dev.tfvars
 labs/**/out/
+.attempts/
+.drill_state.json
+.drill_log.json
+drills/work/*
+!drills/work/.gitkeep
