@@ -12,6 +12,12 @@ ROOT = Path(__file__).resolve().parent.parent
 pytestmark = pytest.mark.skipif(shutil.which("checkov") is None, reason="checkov not installed")
 
 
+@pytest.fixture(autouse=True)
+def tools_on(monkeypatch):
+    # other test modules switch external tools off for the whole run; this file needs checkov
+    monkeypatch.delenv("LABKIT_NO_TOOLS", raising=False)
+
+
 @pytest.mark.parametrize("lab", [k for k in LABS if k not in ("13", "14")])
 def test_solution_passes_policy_scan(lab):
     result = checkov_tool(CHECKOV_SKIPS.get(lab))(Ctx(ROOT / "labs" / LABS[lab][0] / "solution"))
