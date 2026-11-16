@@ -1,4 +1,4 @@
-.PHONY: test lint setup up down kind-up kind-down tutor
+.PHONY: test lint setup up down kind-up kind-down tutor lab-check
 PY ?= python3
 
 setup:
@@ -19,3 +19,5 @@ tutor:
 	$(PY) -m tutor modules
 verify-%:
 	$(PY) scripts/verify.py $*
+lab-check:
+	$(PY) scripts/lab_check.py $(LAB) $(WHICH)

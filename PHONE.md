@@ -12,3 +12,6 @@
 - 5 min: `make verify-NN`, `python -m tutor done NN`, commit and push your notes
 
 If kind is too heavy on your plan, do modules 00–03, 05 (plan only), 06–08 on any size and run 04 on a desktop.
+
+## Daily lab (from a blank file)
+`labs/README.md` has a 10-week path. Each day: read one lab README, write your files in `labs/NN-*/work/`, run `make lab-check LAB=NN`, then compare with `solution/` and commit.

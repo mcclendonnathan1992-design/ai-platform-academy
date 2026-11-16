@@ -1,0 +1,30 @@
+services:
+  api:
+    build: ../01-dockerfile/solution
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_HOST: cache
+    env_file:
+      - .env
+    depends_on:
+      cache:
+        condition: service_healthy
+    networks: [backend]
+
+  cache:
+    image: redis:7.4-alpine
+    volumes:
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [backend]
+
+networks:
+  backend: {}
+
+volumes:
+  cache-data: {}

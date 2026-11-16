@@ -14,6 +14,7 @@ fi
 if ! command -v ollama >/dev/null; then
   curl -fsSL https://ollama.com/install.sh | sh || echo "Install Ollama manually later."
 fi
+command -v az >/dev/null && (az bicep install || echo "Run 'az bicep install' later.")
 python -m pytest -q || true
 echo "Ready: make verify-00"
 exit 0
