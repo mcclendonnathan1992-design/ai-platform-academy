@@ -91,6 +91,26 @@ class ModelRuntime:
         return f"answer to: {prompt}"
 
 
+class ModelBudget:
+    """purpose: cap total spend on the model, across all clients.
+    state:   calls_used, max_calls
+    actions: allow() -> bool, new_window()
+    """
+
+    def __init__(self, max_calls: int) -> None:
+        self.max_calls = max_calls
+        self.calls_used = 0
+
+    def allow(self) -> bool:
+        if self.calls_used >= self.max_calls:
+            return False
+        self.calls_used += 1
+        return True
+
+    def new_window(self) -> None:
+        self.calls_used = 0
+
+
 @dataclass
 class Gateway:
     """The composition. Order matters and is a design decision:
@@ -105,6 +125,7 @@ class Gateway:
     guard: PromptGuard
     cache: ResponseCache
     model: ModelRuntime
+    budget: ModelBudget | None = None
     trace: list[str] = field(default_factory=list)
 
     def handle(self, client: str, prompt: str) -> str | Refusal:
@@ -119,6 +140,9 @@ class Gateway:
         if hit is not None:
             self.trace.append(f"{client}: cache hit")
             return hit
+        if self.budget is not None and not self.budget.allow():
+            self.trace.append(f"{client}: refused (budget_exhausted)")
+            return Refusal("budget_exhausted")
         response = self.model.generate(prompt)
         self.cache.store(prompt, response)
         self.trace.append(f"{client}: model called")

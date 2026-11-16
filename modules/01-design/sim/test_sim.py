@@ -62,3 +62,25 @@ def test_custom_composition_is_possible():
     strict = Gateway(RateLimit(1), PromptGuard(10, ()), ResponseCache(), ModelRuntime())
     assert strict.handle("a", "hi") == "answer to: hi"
     assert strict.handle("a", "hi") == Refusal("rate_limited")
+
+
+def test_model_budget_caps_total_model_calls():
+    from concepts import ModelBudget
+
+    gateway = default_gateway()
+    gateway.budget = ModelBudget(max_calls=2)
+    gateway.handle("a", "q1")
+    gateway.handle("b", "q2")
+    assert gateway.handle("c", "q3") == Refusal("budget_exhausted")
+    assert len(gateway.model.calls) == 2
+
+
+def test_cache_hits_do_not_spend_budget():
+    from concepts import ModelBudget
+
+    gateway = default_gateway()
+    gateway.budget = ModelBudget(max_calls=1)
+    first = gateway.handle("a", "same question")
+    second = gateway.handle("b", "same question")
+    assert first == second
+    assert gateway.budget.calls_used == 1
