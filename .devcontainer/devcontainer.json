@@ -1,9 +1,6 @@
 {
   "name": "AI Platform Academy",
   "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {
-    "ghcr.io/devcontainers/features/terraform:1": {}
-  },
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "forwardPorts": [8080, 11434]
 }
