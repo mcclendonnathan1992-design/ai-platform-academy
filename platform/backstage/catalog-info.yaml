@@ -4,7 +4,7 @@ metadata:
   name: ai-gateway
   description: Guarded gateway in front of a local LLM.
   annotations:
-    github.com/project-slug: YOUR-USER/ai-platform-academy
+    github.com/project-slug: mcclendonnathan1992-design/ai-platform-academy
 spec:
   type: service
   lifecycle: experimental
