@@ -1,4 +1,4 @@
-.PHONY: test lint setup up down kind-up kind-down tutor $(addprefix verify-,00 01 02 03 04 05 06 07 08 09)
+.PHONY: test lint setup up down kind-up kind-down tutor
 PY ?= python3
 
 setup:
